@@ -22,11 +22,17 @@ class MainScreen extends StatefulWidget {
 
 bool windowIsOpen = false;
 
-final String version = "v2023.4";
+final String version = "v2023.6";
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+  // int agent_type = 0;
   late InAppWebViewController controller;
-
+  String target_url = "https://.www.fyoutube.com";
+  final List<String> user_agent = [
+    '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+    // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+  ];
   bool adblocker_status = true;
   // controller =
   // String test = "";
@@ -43,6 +49,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             }
         }
        
+        
     }, 250);
     return function() {
       
@@ -71,12 +78,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     //   });
     //   // Do something when the app is resumed
     // }
-    // if (state == AppLifecycleState.paused) {
-    //   setState(() {
-    //     user_agent =
-    //         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3 ';
-    //   });
-    // }
+    if (state == AppLifecycleState.paused) {
+      setState(() {
+        controller.evaluateJavascript(
+            source: "document.querySelector('video').play()");
+      });
+    }
     // Don't call super.didChangeAppLifecycleState(state);
     // to remove the onPause() function
   }
@@ -122,9 +129,27 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         bottom: BorderSide(width: 1.5, color: Colors.white54),
                       )),
                       child: FlatButton.icon(
-                          onPressed: () => controller.loadUrl(
+                          onPressed: () {
+                            // setState(() {
+                            //   target_url = "https://www.youtube.com";
+                            // });
+                            controller.loadUrl(
                               urlRequest: URLRequest(
-                                  url: Uri.parse("https://www.youtube.com"))),
+                                  url: Uri.parse("https://www.youtube.com")),
+                            );
+                            // setState(() {
+                            //   controller.setOptions(
+                            //       options: InAppWebViewGroupOptions(
+                            //           crossPlatform: InAppWebViewOptions(
+                            //               userAgent: user_agent[1])));
+                            // });
+
+//                             controller.evaluateJavascript(source: """
+//   if (document.visibilityState != 'visible')  {
+//     document.querySelector('video').play();
+//   }
+// """);
+                          },
                           icon: FaIcon(
                             FontAwesomeIcons.youtube,
                             color: Colors.white,
@@ -213,7 +238,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                                       adblocker_status = status;
                                     });
                                   }
-                                  print(adblock);
+                                  controller.reload();
                                 })
                           ]),
                     ),
@@ -252,7 +277,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         backgroundColor: Colors.blueGrey[400],
         title: Text(
-          "By WanZ - " + version,
+          "ZTube",
           style: TextStyle(fontSize: 17),
         ),
         actions: <Widget>[
@@ -273,10 +298,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         width: MediaQuery.of(context).size.width,
         child: InAppWebView(
           initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(
-                  userAgent:
-                      // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-                      '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0'
+              crossPlatform: InAppWebViewOptions(userAgent: user_agent[0]
+                  // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                  // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                  // '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0'
                   // 'random'
                   ),
               android: AndroidInAppWebViewOptions(
@@ -363,7 +388,8 @@ class InfoPage extends StatelessWidget {
                           child: FaIcon(FontAwesomeIcons.youtube,
                               color: Colors.white, size: 50)),
                       GestureDetector(
-                          onTap: () => launch("https://www.tiktok.com/wan._77"),
+                          onTap: () =>
+                              launch("https://www.tiktok.com/@wan._77"),
                           child: FaIcon(FontAwesomeIcons.tiktok,
                               color: Colors.white, size: 50)),
                       GestureDetector(
