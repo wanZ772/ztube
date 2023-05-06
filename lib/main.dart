@@ -1,9 +1,14 @@
+// import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:flutter_app_minimizer/flutter_app_minimizer.dart';
+// import 'notification.dart';
 
-void main() {
+// import 'package:media_notificationx/media_notificationx.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(MaterialApp(
@@ -84,6 +89,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             source: "document.querySelector('video').play()");
       });
     }
+
     // Don't call super.didChangeAppLifecycleState(state);
     // to remove the onPause() function
   }
@@ -285,10 +291,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               onPressed: () => controller.goBack(),
               icon: Icon(Icons.arrow_back_ios_new)),
           IconButton(
-            onPressed: () => controller.reload(),
-            icon: Icon(Icons.refresh_outlined),
-          ),
-          IconButton(
               onPressed: () => controller.goForward(),
               icon: Icon(Icons.arrow_forward_ios_outlined))
         ],
@@ -297,13 +299,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         child: InAppWebView(
+          // implementation: WebViewImplementation.NATIVE,
+          pullToRefreshController: PullToRefreshController(
+              onRefresh: () => controller.reload(),
+              options: PullToRefreshOptions(
+                distanceToTriggerSync: 40,
+              )),
           initialOptions: InAppWebViewGroupOptions(
-              crossPlatform: InAppWebViewOptions(userAgent: user_agent[0]
-                  // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-                  // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-                  // '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0'
-                  // 'random'
-                  ),
+              crossPlatform: InAppWebViewOptions(
+                userAgent: user_agent[0],
+                // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+                // '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0'
+                // 'random'
+              ),
               android: AndroidInAppWebViewOptions(
                   thirdPartyCookiesEnabled: true,
                   needInitialFocus: false,

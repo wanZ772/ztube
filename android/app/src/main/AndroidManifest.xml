@@ -13,7 +13,7 @@
         android:label="ztube"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-        <service android:name="com.phan_tech.flutter_overlay_apps.OverlayService" android:exported="false" />
+        <!-- <service android:name="com.phan_tech.flutter_overlay_apps.OverlayService" android:exported="false" /> -->
         <!-- <service android:name="changjoopark.com.flutter_foreground_plugin.FlutterForegroundService"/> -->
         
         <activity
