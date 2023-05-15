@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:media_notificationx/media_notificationx.dart';
 // import 'package:flutter_app_minimizer/flutter_app_minimizer.dart';
 // import 'notification.dart';
 
@@ -13,7 +14,7 @@ void main() async {
 
   runApp(MaterialApp(
     home: MainScreen(),
-    title: "Ztube",
+    title: "ZTube",
     debugShowCheckedModeBanner: false,
   ));
 }
@@ -27,18 +28,18 @@ class MainScreen extends StatefulWidget {
 
 bool windowIsOpen = false;
 
-final String version = "v2023.6";
+final String version = "v2023.5.8";
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   // int agent_type = 0;
   late InAppWebViewController controller;
-  String target_url = "https://.www.fyoutube.com";
+
   final List<String> user_agent = [
     '(Windows NT 10.0; Win64; x64) Chrome/112.0.0.0',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
     // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
   ];
-  bool adblocker_status = true;
+  bool adblocker_status = true, keep_play_value = false, keep_play = false;
   // controller =
   // String test = "";
   String javaScript = "alert(1);";
@@ -67,7 +68,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     super.initState();
-
+    // MediaNotificationx.setListener('pause', () => print("pause"));
+    // MediaNotificationx.showNotificationManager(title: "Test", isPlaying: true);
+    // print("notification called");
     // android_window.setHandler((name, data) => {print(name, );});
   }
 
@@ -84,10 +87,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     //   // Do something when the app is resumed
     // }
     if (state == AppLifecycleState.paused) {
-      setState(() {
-        controller.evaluateJavascript(
-            source: "document.querySelector('video').play()");
-      });
+      if (keep_play) {
+        setState(() {
+          controller.evaluateJavascript(
+              source: "document.querySelector('video').pause()");
+          controller.evaluateJavascript(
+              source: "document.querySelector('video').play()");
+        });
+      }
     }
 
     // Don't call super.didChangeAppLifecycleState(state);
@@ -172,19 +179,48 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                         bottom: BorderSide(width: 1.5, color: Colors.white54),
                       )),
                       child: FlatButton.icon(
-                          onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NotReady())),
-                          icon: FaIcon(
-                            FontAwesomeIcons.spotify,
+                          onPressed: () => controller.reload(),
+                          icon: Icon(
+                            Icons.replay_outlined,
                             color: Colors.white,
                             size: 20,
                           ),
-                          label: Text("Spotify",
+                          label: Text("Force Reload",
                               style: TextStyle(
                                   color: Colors.white, fontSize: 25))),
                     ),
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            border: Border(
+                          bottom: BorderSide(width: 1.5, color: Colors.white54),
+                        )),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Force Video Play",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 25)),
+                            Switch(
+                                value: keep_play_value,
+                                activeColor: Colors.greenAccent,
+                                inactiveThumbColor: Colors.red,
+                                inactiveTrackColor: Colors.redAccent,
+                                onChanged: (status) {
+                                  if (status) {
+                                    setState(() {
+                                      keep_play = true;
+                                    });
+                                  } else {
+                                    setState(() {
+                                      keep_play = false;
+                                    });
+                                  }
+                                  keep_play_value = status;
+                                  // print(keep_play);
+                                }),
+                          ],
+                        )),
                     Container(
                       width: MediaQuery.of(context).size.width,
                       decoration: BoxDecoration(
@@ -194,19 +230,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            FlatButton.icon(
-                                onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => InfoPage())),
-                                icon: Icon(
-                                  Icons.block_sharp,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                label: Text("Ads Blocker",
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 25))),
+                            Text("Ads Blocker",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 25)),
                             Switch(
                                 value: adblocker_status,
                                 activeColor: Colors.greenAccent,
@@ -288,6 +314,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
         actions: <Widget>[
           IconButton(
+              onPressed: () => Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => NotReady())),
+              icon: Icon(Icons.file_download_outlined)),
+          IconButton(
               onPressed: () => controller.goBack(),
               icon: Icon(Icons.arrow_back_ios_new)),
           IconButton(
@@ -307,6 +337,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               )),
           initialOptions: InAppWebViewGroupOptions(
               crossPlatform: InAppWebViewOptions(
+                mediaPlaybackRequiresUserGesture: false,
+
                 userAgent: user_agent[0],
                 // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
                 // 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
@@ -329,7 +361,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
           onLoadStart: (_, url) {
             _.evaluateJavascript(source: adblock);
           },
-          onLoadError: (controller, url, code, message) => controller.reload(),
+          // onLoadError: (controller, url, code, message) => controller.reload(),
           // onLoadStop: (_, url) => _.evaluateJavascript(
           //     source:
           //         "while (true){document.querySelector('video').play();}")
@@ -344,8 +376,7 @@ class NotReady extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text("Not Ready");
-    ;
+    return SafeArea(child: Text("Not Ready"));
   }
 }
 
